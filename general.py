@@ -49,3 +49,15 @@ def set_to_file(links, file_name):
     with open(file_name,"w") as f:
         for l in sorted(links):
             f.write(l+"\n")
+
+
+# check if a directory exists or not
+def directory_exists(directory):
+    return os.path.exists(directory)
+
+
+# Making a directory if doesn't exists
+def make_dir(directory):
+    if not os.path.exists(directory):
+        print('Creating directory ' + directory)
+        os.makedirs(directory)

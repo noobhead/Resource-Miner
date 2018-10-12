@@ -1,3 +1,4 @@
+import requests
 import threading
 from queue import Queue
 from spider import Spider
@@ -9,6 +10,7 @@ HOMEPAGE = ''
 DOMAIN_NAME = get_domain_name(HOMEPAGE)
 QUEUE_FILE = PROJECT_NAME + '/queue.txt'
 CRAWLED_FILE = PROJECT_NAME + '/crawled.txt'
+RESOURCE_DIRECTORY = PROJECT_NAME + '/resources'
 NUMBER_OF_THREADS = 8
 queue = Queue()
 Spider(PROJECT_NAME, HOMEPAGE, DOMAIN_NAME)
@@ -22,12 +24,30 @@ def create_workers():
         t.start()
 
 
-# Do the next job in the queue
 def work():
     while True:
         url = queue.get()
-        Spider.crawl_page(threading.current_thread().name, url)
+        do_task(url)
         queue.task_done()
+
+
+
+def do_task(url):
+    content_type = ''
+    try:
+        resp = requests.head(url)
+        # checking if the link is a webpage or a file
+        content_type = resp.headers['Content-Type']
+
+        if 'text/html' in content_type:
+            Spider.crawl_page(threading.current_thread().name, url)
+        else: 
+            # the link contains a file
+            Spider.crawl_file(threading.current_thread().name, url, content_type)
+            
+    except Exception as e:
+        pass
+    
 
 
 # Each queued link is a new job
